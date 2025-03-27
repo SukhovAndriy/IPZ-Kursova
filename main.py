@@ -1,5 +1,4 @@
-from locale import windows_locale
-
+import tkinter as tk
 
 def hello():
     h = print ("Hello World!")
