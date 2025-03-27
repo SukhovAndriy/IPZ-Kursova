@@ -1,35 +1,27 @@
-import tkinter as tk
+# logic.py
 from tkinter import messagebox
-
-# Створення головного вікна
-root = tk.Tk()
-root.title("Хрестики-Нулики")
-root.resizable(False, False)
 
 # Глобальні змінні
 current_player = "X"
 board = [""] * 9  # Ігрове поле
+buttons = []  # Масив кнопок (буде заповнено в interface.py)
 
-
-# Функція перевірки перемоги
+# Функція перевірки переможця
 def check_winner():
-    # Всі можливі виграшні комбінації
     win_combinations = [
         (0, 1, 2), (3, 4, 5), (6, 7, 8),  # Горизонтальні
         (0, 3, 6), (1, 4, 7), (2, 5, 8),  # Вертикальні
         (0, 4, 8), (2, 4, 6)  # Діагональні
     ]
 
-    for combo in win_combinations:
-        a, b, c = combo
+    for a, b, c in win_combinations:
         if board[a] == board[b] == board[c] and board[a] != "":
-            return board[a]  # Повертаємо переможця (X або O)
+            return board[a]  # Переможець (X або O)
 
     if "" not in board:
         return "Нічия"  # Якщо всі клітинки заповнені і немає переможця
 
     return None  # Гра триває
-
 
 # Функція обробки кліку по кнопці
 def on_click(index):
@@ -50,7 +42,6 @@ def on_click(index):
             # Змінюємо гравця
             current_player = "O" if current_player == "X" else "X"
 
-
 # Функція перезапуску гри
 def reset_game():
     global current_player, board
@@ -58,24 +49,3 @@ def reset_game():
     board = [""] * 9
     for button in buttons:
         button.config(text="", state="normal")
-
-
-# Створення кнопок для ігрового поля
-buttons = []
-def create_button(index):
-    return tk.Button(root, text="", font=("Arial", 24), width=5, height=2, command=lambda: on_click(index))
-
-buttons = []
-for i in range(9):
-    btn = create_button(i)  # Викликаємо функцію для створення кнопки
-    btn.grid(row=i // 3, column=i % 3)
-    buttons.append(btn)
-
-
-# Додаємо кнопку для перезапуску гри
-reset_button = tk.Button(root, text="Перезапустити гру", font=("Arial", 14),
-                         command=reset_game)
-reset_button.grid(row=3, column=0, columnspan=3, pady=10)
-
-# Запуск головного циклу
-root.mainloop()
