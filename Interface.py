@@ -1,6 +1,5 @@
-# interface.py
 import tkinter as tk
-from logic import on_click, reset_game, buttons  # Імпортуємо логіку гри
+from logic import *
 
 # Створення головного вікна
 root = tk.Tk()

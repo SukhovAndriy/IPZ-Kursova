@@ -1,10 +1,5 @@
 import tkinter as tk
+import Interface
 
-def hello():
-    h = print ("Hello World!")
-    return h
-hello()
+Interface.root.mainloop()
 
-def main_window():
-    
-    return None;

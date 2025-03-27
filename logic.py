@@ -1,4 +1,3 @@
-# logic.py
 from tkinter import messagebox
 
 # Глобальні змінні
