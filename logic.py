@@ -1,50 +1,40 @@
-from tkinter import messagebox
+class Game:
+    def __init__(self):
+        self.board = [""] * 9
+        self.current_player = "X"
+        self.game_over = False
 
-# Глобальні змінні
-current_player = "X"
-board = [""] * 9  # Ігрове поле
-buttons = []  # Масив кнопок (буде заповнено в interface.py)
+    def make_move(self, index):
+        if self.game_over or self.board[index] != "":
+            return None  # Хід недійсний
 
-# Функція перевірки переможця
-def check_winner():
-    win_combinations = [
-        (0, 1, 2), (3, 4, 5), (6, 7, 8),  # Горизонтальні
-        (0, 3, 6), (1, 4, 7), (2, 5, 8),  # Вертикальні
-        (0, 4, 8), (2, 4, 6)  # Діагональні
-    ]
+        self.board[index] = self.current_player
+        winner = self.check_winner()
 
-    for a, b, c in win_combinations:
-        if board[a] == board[b] == board[c] and board[a] != "":
-            return board[a]  # Переможець (X або O)
-
-    if "" not in board:
-        return "Нічия"  # Якщо всі клітинки заповнені і немає переможця
-
-    return None  # Гра триває
-
-# Функція обробки кліку по кнопці
-def on_click(index):
-    global current_player
-
-    if board[index] == "":  # Якщо клітинка порожня
-        board[index] = current_player
-        buttons[index].config(text=current_player, state="disabled")
-
-        winner = check_winner()
         if winner:
-            if winner == "Нічия":
-                messagebox.showinfo("Гра закінчена", "Нічия!")
-            else:
-                messagebox.showinfo("Гра закінчена", f"Гравець {winner} переміг!")
-            reset_game()
-        else:
-            # Змінюємо гравця
-            current_player = "O" if current_player == "X" else "X"
+            self.game_over = True
+            return winner
 
-# Функція перезапуску гри
-def reset_game():
-    global current_player, board
-    current_player = "X"
-    board = [""] * 9
-    for button in buttons:
-        button.config(text="", state="normal")
+        self.current_player = "O" if self.current_player == "X" else "X"
+        return None  # Гра триває
+
+    def check_winner(self):
+        combos = [
+            (0, 1, 2), (3, 4, 5), (6, 7, 8),  # Горизонталі
+            (0, 3, 6), (1, 4, 7), (2, 5, 8),  # Вертикалі
+            (0, 4, 8), (2, 4, 6)              # Діагоналі
+        ]
+
+        for i1, i2, i3 in combos:
+            if self.board[i1] == self.board[i2] == self.board[i3] and self.board[i1] != "":
+                return self.board[i1]
+
+        if "" not in self.board:
+            return "Нічия"
+
+        return None
+
+    def reset(self):
+        self.board = [""] * 9
+        self.current_player = "X"
+        self.game_over = False
