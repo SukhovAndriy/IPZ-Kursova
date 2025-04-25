@@ -1,5 +1,11 @@
 import tkinter as tk
-import Interface
+from Interface import GameUI
 
-Interface.root.mainloop()
+if __name__ == "__main__":
+    root = tk.Tk()
+    root.title("Хрестики-Нулики")
+    root.resizable(False, False)
 
+    game_ui = GameUI(root)
+    root.mainloop()
+    root.mainloop()
