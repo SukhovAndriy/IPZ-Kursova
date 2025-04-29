@@ -1,13 +1,12 @@
 import socket
 import threading
-import socket
-import threading
 
 class TicTacToeServer:
-    def __init__(self, host="127.0.0.1", port=5555):
+    def __init__(self, host="0.0.0.0", port=5555):
         self.board = [""] * 9
-        self.current_player = "X"
-        self.connections = []
+        self.players = {}
+        self.turn = "X"
+        self.lock = threading.Lock()
         self.host = host
         self.port = port
 
@@ -17,39 +16,44 @@ class TicTacToeServer:
         server.listen(2)
         print("Сервер запущено. Очікування гравців...")
 
-        while len(self.connections) < 2:
+        while len(self.players) < 2:
             conn, addr = server.accept()
-            self.connections.append(conn)
-            print(f"Гравець {len(self.connections)} підключився: {addr}")
-            conn.sendall(self.current_player.encode())
-            threading.Thread(target=self.handle_client, args=(conn,)).start()
+            symbol = "X" if len(self.players) == 0 else "O"
+            self.players[conn] = symbol
+            conn.sendall(f"SYMBOL:{symbol}".encode())
+            print(f"Підключено гравця {symbol} з адреси {addr}")
+            threading.Thread(target=self.handle_client, args=(conn,), daemon=True).start()
 
     def handle_client(self, conn):
-        while True:
-            try:
+        symbol = self.players[conn]
+        try:
+            while True:
                 data = conn.recv(1024).decode()
-                if not data:
-                    break
-                index = int(data)
+                if data.startswith("MOVE:"):
+                    index = int(data.split(":")[1])
+                    with self.lock:
+                        if self.board[index] == "" and self.turn == symbol:
+                            self.board[index] = symbol
+                            self.broadcast(f"UPDATE:{index},{symbol}")
 
-                if self.board[index] == "":
-                    self.board[index] = self.current_player
-                    winner = self.check_winner()
+                            winner = self.check_winner()
+                            if winner:
+                                self.broadcast(f"END:{winner}")
+                                self.reset()
+                            else:
+                                self.turn = "O" if self.turn == "X" else "X"
+                                self.broadcast(f"TURN:{self.turn}")
+        except:
+            print(f"Гравець {symbol} відключився")
+            conn.close()
+            del self.players[conn]
 
-                    for c in self.connections:
-                        c.sendall(f"{index},{self.current_player}".encode())
-
-                    if winner:
-                        for c in self.connections:
-                            c.sendall(f"END:{winner}".encode())
-                        self.board = [""] * 9
-                        self.current_player = "X"
-                    else:
-                        self.current_player = "O" if self.current_player == "X" else "X"
-
+    def broadcast(self, message):
+        for conn in self.players:
+            try:
+                conn.sendall(message.encode())
             except:
-                break
-        conn.close()
+                pass
 
     def check_winner(self):
         combos = [
@@ -57,13 +61,16 @@ class TicTacToeServer:
             (0,3,6), (1,4,7), (2,5,8),
             (0,4,8), (2,4,6)
         ]
-        for i1, i2, i3 in combos:
-            if self.board[i1] == self.board[i2] == self.board[i3] != "":
-                return self.board[i1]
+        for i, j, k in combos:
+            if self.board[i] == self.board[j] == self.board[k] != "":
+                return self.board[i]
         if "" not in self.board:
             return "Нічия"
         return None
 
+    def reset(self):
+        self.board = [""] * 9
+        self.turn = "X"
+
 if __name__ == "__main__":
-    server = TicTacToeServer()
-    server.start()
+    TicTacToeServer().start()
