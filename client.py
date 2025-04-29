@@ -5,40 +5,57 @@ from tkinter import messagebox
 
 class TicTacToeClient:
     def __init__(self, host="127.0.0.1", port=5555):
-        self.root = tk.Tk()
-        self.root.title("Хрестики-Нулики — Онлайн")
-        self.board = [""] * 9
-        self.buttons = []
-        self.my_symbol = ""
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect((host, port))
+        self.symbol = ""
+        self.my_turn = False
+        self.board = [""] * 9
+
+        self.root = tk.Tk()
+        self.root.title("Хрестики-Нулики")
+        self.buttons = []
         self.create_ui()
+
         threading.Thread(target=self.receive_data, daemon=True).start()
+        self.root.mainloop()
 
     def create_ui(self):
         for i in range(9):
-            btn = tk.Button(self.root, text="", font=("Arial", 24),
-                            width=5, height=2, command=lambda i=i: self.send_move(i))
-            btn.grid(row=i // 3, column=i % 3)
+            btn = tk.Button(self.root, text="", font=("Arial", 24), width=5, height=2,
+                            command=lambda i=i: self.make_move(i))
+            btn.grid(row=i//3, column=i%3)
             self.buttons.append(btn)
 
-    def send_move(self, index):
-        if self.board[index] == "" and self.my_symbol:
-            self.client.sendall(str(index).encode())
+    def make_move(self, index):
+        if self.my_turn and self.board[index] == "":
+            self.client.sendall(f"MOVE:{index}".encode())
 
     def receive_data(self):
-        self.my_symbol = self.client.recv(1024).decode()
-        self.root.title(f"Гравець: {self.my_symbol}")
         while True:
-            data = self.client.recv(1024).decode()
-            if data.startswith("END:"):
-                winner = data.split(":")[1]
-                messagebox.showinfo("Гра завершена!", f"Результат: {winner}")
-                self.reset_board()
-            else:
-                index, symbol = data.split(",")
-                self.board[int(index)] = symbol
-                self.update_ui()
+            try:
+                data = self.client.recv(1024).decode()
+                if data.startswith("SYMBOL:"):
+                    self.symbol = data.split(":")[1]
+                    self.root.title(f"Ви гравець {self.symbol}")
+                    if self.symbol == "X":
+                        self.my_turn = True
+
+                elif data.startswith("TURN:"):
+                    turn = data.split(":")[1]
+                    self.my_turn = (turn == self.symbol)
+
+                elif data.startswith("UPDATE:"):
+                    index, sym = data.split(":")[1].split(",")
+                    self.board[int(index)] = sym
+                    self.update_ui()
+
+                elif data.startswith("END:"):
+                    winner = data.split(":")[1]
+                    message = "Нічия!" if winner == "Нічия" else f"Гравець {winner} переміг!"
+                    messagebox.showinfo("Гра завершена", message)
+                    self.reset_ui()
+            except:
+                break
 
     def update_ui(self):
         for i in range(9):
@@ -46,11 +63,10 @@ class TicTacToeClient:
             if self.board[i] != "":
                 self.buttons[i].config(state="disabled")
 
-    def reset_board(self):
+    def reset_ui(self):
         self.board = [""] * 9
         for btn in self.buttons:
             btn.config(text="", state="normal")
 
 if __name__ == "__main__":
-    client = TicTacToeClient()
-    client.root.mainloop()
+    TicTacToeClient()
