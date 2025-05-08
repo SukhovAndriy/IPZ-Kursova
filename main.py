@@ -1,11 +1,7 @@
-import tkinter as tk
-from Interface import GameUI
+from client_logic import ClientProtocol
+from client_ui import TicTacToeUI
 
-if __name__ == "__main__":
-    root = tk.Tk()
-    root.title("Хрестики-Нулики")
-    root.resizable(False, False)
-
-    game_ui = GameUI(root)
-    root.mainloop()
-    root.mainloop()
+if __name__=='__main__':
+    proto = ClientProtocol('26.125.50.236',12345,on_message=lambda msg: app.process(msg))
+    app = TicTacToeUI(proto)
+    app.start()
