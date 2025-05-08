@@ -23,7 +23,8 @@ class TicTacToeServer:
             buffer = ''
             while True:
                 data = conn.recv(1024).decode()
-                if not data: break
+                if not data:
+                    break
                 buffer += data
                 while '\n' in buffer:
                     line, buffer = buffer.split('\n',1)
@@ -46,27 +47,27 @@ class TicTacToeServer:
                 else:
                     self.game.switch_player()
                     self.send(self.clients[self.game.current_player],'YOUR_TURN')
-        elif msg=='RESTART':
+        elif msg == 'RESTART':
             votes = self.game.vote_restart(pid)
             self.broadcast(f'RESTART_COUNT:{votes}')
-            if votes==2:
+            if votes == 2:
                 self.game.reset()
                 self.broadcast('RESET')
                 self.send(self.clients[0],'YOUR_TURN')
 
     def start(self):
-        self.sock.bind((HOST,PORT))
+        self.sock.bind((HOST, PORT))
         self.sock.listen(2)
         print(f'[SERVER] Listening on {HOST}:{PORT}')
         while True:
-            if len(self.clients)<2:
-                conn,_ = self.sock.accept()
+            if len(self.clients) < 2:
+                conn, _ = self.sock.accept()
                 pid = len(self.clients)
                 self.clients.append(conn)
-                self.send(conn,f'START:{self.symbols[pid]}')
-                if pid==1:
-                    self.send(self.clients[0],'YOUR_TURN')
-                threading.Thread(target=self.handle_client,args=(conn,pid),daemon=True).start()
+                self.send(conn, f'START:{self.symbols[pid]}')
+                if pid == 1:
+                    self.send(self.clients[0], 'YOUR_TURN')
+                threading.Thread(target=self.handle_client, args=(conn, pid), daemon=True).start()
 
-if __name__=='__main__':
+if __name__ == '__main__':
     TicTacToeServer().start()

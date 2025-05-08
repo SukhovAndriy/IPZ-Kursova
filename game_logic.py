@@ -22,7 +22,7 @@ class TicTacToeGame:
             return True
 
     def check_winner(self, symbol):
-        return any(all(self.board[i]==symbol for i in combo) for combo in self.WIN_COMBOS)
+        return any(all(self.board[i] == symbol for i in combo) for combo in self.WIN_COMBOS)
 
     def is_full(self):
         return '' not in self.board
