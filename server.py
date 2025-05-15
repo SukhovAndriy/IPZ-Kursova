@@ -49,6 +49,10 @@ def handle_client(conn, player_id, clients, game, restart_requests):
                         for c in clients:
                             send_msg(c, "RESET")
                         send_msg(clients[0], "YOUR_TURN")
+                elif line.startswith("CHAT:"):
+                    msg = line.split(":", 1)[1]
+                    for c in clients:
+                        send_msg(c, f"CHAT:{player_id}:{msg}")
     except Exception:
         pass
     for c in clients:
@@ -95,7 +99,6 @@ def start_server():
         print("\n[СЕРВЕР] Зупинка.")
     finally:
         server.close()
-
 
 if __name__ == "__main__":
     start_server()
