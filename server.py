@@ -1,10 +1,9 @@
-# server.py
 import socket
 import threading
 import random
 from game_logic import Game, symbols
 
-HOST = '26.125.50.236'
+HOST = '0.0.0.0'
 PORT = 12345
 lock = threading.Lock()
 
