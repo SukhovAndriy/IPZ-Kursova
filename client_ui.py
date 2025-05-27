@@ -3,10 +3,8 @@ from tkinter import messagebox, scrolledtext
 from client_network import ClientNetwork
 from game_logic import symbols, combos
 
-
 COLOR_X = '#FF1744'
 COLOR_O = '#2196F3'
-
 
 class ConnectionWindow:
    def __init__(self, on_connect):
@@ -37,9 +35,7 @@ class ConnectionWindow:
            command=self.connect, bg="#4CAF50", fg="white", relief=tk.FLAT)
        connect_btn.grid(row=3, column=0, columnspan=2, pady=10, padx=5, sticky='we')
 
-
        self.on_connect = on_connect
-
 
    def _center_window(self, width, height):
        screen_w = self.root.winfo_screenwidth()
@@ -48,7 +44,6 @@ class ConnectionWindow:
        y = (screen_h - height) // 2
        self.root.geometry(f"{width}x{height}+{x}+{y}")
 
-
    def connect(self):
        nick = self.nick_entry.get().strip() or "Ноунейм"
        ip = self.ip_entry.get()
@@ -56,10 +51,8 @@ class ConnectionWindow:
        self.root.destroy()
        self.on_connect(ip, port, nick)
 
-
    def run(self):
        self.root.mainloop()
-
 
 class TicTacToeUI:
    def __init__(self, ip, port, nick):
@@ -71,23 +64,18 @@ class TicTacToeUI:
        self.root.configure(bg="#F0F0F0")
        self.root.resizable(False, False)
 
-
        self.symbol = ''
        self.my_turn = False
        self.restart_count = 0
 
-
        header = tk.Label(self.root, text=f"Ваш нік: {self.nick}", font=("Helvetica", 14), bg="#F0F0F0")
        header.pack(pady=10)
-
 
        self.status_label = tk.Label(self.root, text="Очікування гравця..", font=("Helvetica", 12), bg="#F0F0F0")
        self.status_label.pack(pady=5)
 
-
        self.game_frame = tk.Frame(self.root, bg="#F0F0F0")
        self.game_frame.pack(pady=10)
-
 
        ctrl_frame = tk.Frame(self.root, bg="#F0F0F0")
        ctrl_frame.pack(pady=10)
@@ -99,7 +87,6 @@ class TicTacToeUI:
        exit_btn.grid(row=0, column=1, padx=5)
        self.restart_label = tk.Label(ctrl_frame, text="Перезапуск: 0/2", font=("Helvetica", 12), bg="#F0F0F0")
        self.restart_label.grid(row=0, column=2, padx=5)
-
 
        chat_frame = tk.LabelFrame(self.root, text="Чат", font=("Helvetica", 12), bg="#F0F0F0")
        chat_frame.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
@@ -113,10 +100,8 @@ class TicTacToeUI:
            font=("Helvetica", 12), bg="#4CAF50", fg="white", relief=tk.FLAT)
        send_btn.pack(side=tk.RIGHT)
 
-
        self.network = ClientNetwork(ip, port, self.process_message)
        self.network.send(f"NICK:{self.nick}")
-
 
    def _center_window(self, width, height):
        screen_w = self.root.winfo_screenwidth()
@@ -125,13 +110,11 @@ class TicTacToeUI:
        y = (screen_h - height) // 2
        self.root.geometry(f"{width}x{height}+{x}+{y}")
 
-
    def send_chat(self):
        msg = self.chat_entry.get().strip()
        if msg:
            self.network.send(f"CHAT:{msg}")
            self.chat_entry.delete(0, tk.END)
-
 
    def process_message(self, line):
        if line.startswith("START:"):
@@ -142,22 +125,18 @@ class TicTacToeUI:
            else:
                self.status_label.config(text=f"Ваш символ: {self.symbol}")
 
-
        elif line.startswith("OPPONENT_NICK:"):
            self.opponent_nick = line.split(":")[1]
-
 
        elif line == "YOUR_TURN":
            self.my_turn = True
            self.status_label.config(text="Ваш хід")
-
 
        elif line.startswith("UPDATE:"):
            _, idx, sym = line.split(":")
            btn = self.buttons[int(idx)]
            color = COLOR_X if sym == 'X' else COLOR_O
            btn.config(text=sym, disabledforeground=color, state="disabled")
-
 
        elif line.startswith("WIN:"):
            winner_sym = line.split(":")[1]
@@ -174,10 +153,8 @@ class TicTacToeUI:
                btn.config(state="disabled")
            messagebox.showinfo("Гра завершена", f"Переміг {winner_nick}")
 
-
        elif line == "TIE":
            messagebox.showinfo("Гра завершена", "Нічия")
-
 
        elif line.startswith("RESTART_COUNT:"):
            count = int(line.split(":")[1])
@@ -185,15 +162,12 @@ class TicTacToeUI:
                self.restart_count = count
                self.restart_label.config(text=f"Перезапуск: {count}/2")
 
-
        elif line == "RESET":
            self.reset_board()
-
 
        elif line == "OPPONENT_LEFT":
            messagebox.showinfo("Злився", "Суперник покинув гру.")
            self.root.destroy()
-
 
        elif line.startswith("CHAT:"):
            _, sender_nick, msg = line.split(":", 2)
@@ -201,13 +175,11 @@ class TicTacToeUI:
                self.opponent_nick = sender_nick
            self.root.after(0, self.display_chat, sender_nick, msg)
 
-
    def display_chat(self, sender_nick, msg):
        self.chat_box.config(state='normal')
        self.chat_box.insert(tk.END, f"[{sender_nick}]: {msg}\n")
        self.chat_box.see(tk.END)
        self.chat_box.config(state='disabled')
-
 
    def start_game_ui(self):
        self.status_label.config(text=f"Ваш символ: {self.symbol}")
@@ -220,17 +192,14 @@ class TicTacToeUI:
            self.buttons.append(btn)
        self.default_bg = self.buttons[0].cget("bg")
 
-
    def make_move(self, idx):
        if self.my_turn and self.buttons[idx]["text"] == "":
            self.network.send(f"MOVE:{idx}")
            self.my_turn = False
            self.status_label.config(text="Хід супротивника..")
 
-
    def request_restart(self):
        self.network.send("RESTART")
-
 
    def reset_board(self):
        for btn in self.buttons:
@@ -240,10 +209,8 @@ class TicTacToeUI:
        self.restart_label.config(text="Перезапуск: 0/2")
        self.status_label.config(text=f"Ваш символ: {self.symbol}")
 
-
    def run(self):
        self.root.mainloop()
-
 
 if __name__ == '__main__':
    ConnectionWindow(lambda ip, port, nick: TicTacToeUI(ip, port, nick).run()).run()

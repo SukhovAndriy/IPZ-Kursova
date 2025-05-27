@@ -1,4 +1,3 @@
-# game_logic.py
 symbols = ['X', 'O']
 
 combos = [
