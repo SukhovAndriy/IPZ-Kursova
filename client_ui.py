@@ -21,7 +21,7 @@ class ConnectionWindow:
 
        tk.Label(self.root, text="IP:", font=("Helvetica", 12)).grid(row=1, column=0, pady=5, padx=5)
        self.ip_entry = tk.Entry(self.root, font=("Helvetica", 12))
-       self.ip_entry.insert(0, "26.125.50.236")
+       self.ip_entry.insert(0, "localhost")
        self.ip_entry.grid(row=1, column=1, pady=5, padx=5)
 
 
